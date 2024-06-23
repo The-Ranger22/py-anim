@@ -3,7 +3,7 @@ sys.path.append(os.getcwd())
 from src import App
 from src.camera import GameCamera
 from src.entity import GameEntity
-from src.events import MoveAction
+from src.actions import MoveAction
 from src.scene import Scene
 import pyray as pr
 

@@ -2,15 +2,14 @@ from src.abstract import EntityI
 from abc import ABC, abstractmethod
 from enum import Enum, auto
 from itertools import count
-from pyray import Vector3, get_fps, vector3_add, vector3_max, vector3_min, vector3_subtract, vector3_scale
+from pyray import Vector3, vector3_add 
 class ActionState(Enum):
     INITIAL = auto()
     ACTIVE = auto()
     PAUSED = auto()
     COMPLETE = auto()
     FAILED = auto()
-
-
+    
 class ActionBase(ABC):
     _target: EntityI 
     _count = count()
@@ -49,7 +48,55 @@ class ActionBase(ABC):
         if self._state == ActionState.PAUSED:
             self.activate()
     
+    def is_complete(self) -> bool:
+        return self._step_count >= self._num_steps
 
+    def resolve_state(self):
+        if self.is_complete():
+            self.complete()
+
+
+class HasActionQueue(object):
+    def __init__(self):
+        self._actions: list[ActionBase] = []
+        self._active_action: ActionBase = None
+    
+    def queue_action(self, new_action: ActionBase):
+        self._actions.append(new_action)
+
+    def deque_action(self, idx=0):
+        return self._actions.pop(idx)
+
+    def start_aq(self):
+        self._active_action = self._actions.pop(0)
+
+    def resolve_current_action(self):
+        if not self._active_action and len(self._actions) <= 0:
+            return
+        elif not self._active_action:
+            self.start_aq()
+        match self._active_action._state:
+            case ActionState.INITIAL:
+                self._active_action.activate()
+            case ActionState.ACTIVE:
+                self._active_action.step()
+            case ActionState.PAUSED:
+                ... # Do nothing
+            case ActionState.COMPLETE:
+                self._active_action = None
+
+        
+
+class WaitAction(ActionBase):
+    def __init__(self, target, duration_seconds: float):
+        super().__init__(self, target=target, duration_seconds=duration_seconds)
+        self._step_count = 0
+        self._num_steps = self._duration_sec * 60.0
+    
+    def step(self):
+        self._step_count += 1
+        self.resolve_state()
+         
 class MoveAction(ActionBase):
     _p1: Vector3
     _p2: Vector3
@@ -84,15 +131,6 @@ class MoveAction(ActionBase):
         self._step_count += 1
         self.resolve_state()
     
-    def is_complete(self) -> bool:
-        return self._step_count >= self._num_steps
-
-    def resolve_state(self):
-        if self.is_complete():
-            
-            print(f"x: {self._p1.x:.06f} y: {self._p1.y:.06f} z: {self._p1.z:.06f}")
-            print(f"x: {self._p2.x:.06f} y: {self._p2.y:.06f} z: {self._p2.z:.06f}")
-            self.complete()
         
 
         
