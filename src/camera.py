@@ -1,9 +1,8 @@
-from src.entity import EntityI
-from src.actions import ActionBase
+from src.abstract import EntityI
+from src.actions import HasActionQueue
 from pyray import Camera3D, CameraMode, CameraProjection, update_camera_pro, update_camera, Vector3
 
-class GameCamera(EntityI):
-
+class GameCamera(EntityI, HasActionQueue):
     def __init__(
             self, 
             pos: Vector3, 
@@ -13,7 +12,8 @@ class GameCamera(EntityI):
             projection: CameraProjection = CameraProjection.CAMERA_PERSPECTIVE,
             mode: CameraMode = CameraMode.CAMERA_CUSTOM
         ):
-        super().__init__(self)
+        super(EntityI, self).__init__()
+        super(HasActionQueue, self).__init__()
         self._cam = Camera3D(pos, target, up, fovy, projection)
         self._pos = pos
         self._target = target
@@ -26,12 +26,10 @@ class GameCamera(EntityI):
                 self._update_fn = self._update_cstm
             case _:
                 self._update_fn = self._update_std
-        self._actions: list[ActionBase] = []
-        self._active_action = None
 
     def _update_cstm(self):
-        pass
-
+        self.resolve_current_action()
+        self._cam.position = self.pos
     def _update_std(self):
         update_camera(self._cam, self._mode)
     
