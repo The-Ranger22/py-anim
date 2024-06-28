@@ -1,7 +1,7 @@
 from src import App, Scene
 from src.entity import GameEntity
 from src.camera import GameCamera
-from src.actions import MoveAction, WaitAction, CompoundAction, LookAtAction, SplineMoveAction, LookRelativeAction
+from src.actions import MoveAction, WaitAction, CompoundAction, LookAtAction, SplineMoveAction, LookRelativeAction, SequencedAction
 from pyray import Vector3, BLUE, RED, GREEN, BLACK, CameraMode, YELLOW, gen_mesh_sphere, load_model_from_mesh, CameraProjection
 def test_scene():
     print("Enter Test Scene")
@@ -46,7 +46,7 @@ def test_actions():
     entities[4].queue_action(MoveAction(entities[4], Vector3(0, 5.0, 0), 3.0))
 
     print("Prepare Camera")
-    camera = GameCamera([18.0, 16.0, 18.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], mode=CameraMode.CAMERA_ORBITAL)
+    camera = GameCamera([.0, 20.0, .0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], mode=CameraMode.CAMERA_ORBITAL)
     scene = Scene(camera, entities)
     app.add_scene(scene, True)
     print("App Start")
@@ -64,21 +64,33 @@ def test_camera_movement():
         GameEntity(pos=Vector3(-coord, 0,  coord), scale=5.0, color=RED),
         GameEntity(pos=Vector3( coord, 0, -coord), scale=5.0, color=GREEN),
         GameEntity(pos=Vector3(-coord, 0, -coord), scale=5.0, color=BLACK),
-        GameEntity(load_model_from_mesh(gen_mesh_sphere(1.0, 8, 8)), pos=Vector3(0,0,0), color=YELLOW)
+        # GameEntity(load_model_from_mesh(gen_mesh_sphere(1.0, 8, 8)), pos=Vector3(0,0,0), color=YELLOW)
+        GameEntity(load_model_from_mesh(gen_mesh_sphere(1.0, 8, 8)), pos=Vector3(0.0, 20.0, 0.0), color=YELLOW)
     ]
-    entities[4].queue_action(MoveAction(entities[4], Vector3(-coord, 0, 0), 1.5))
-    entities[4].queue_action(MoveAction(entities[4], Vector3(0, 0, coord), 3.0))
-    entities[4].queue_action(MoveAction(entities[4], Vector3(coord, 0, 0), 3.0))
-    entities[4].queue_action(MoveAction(entities[4], Vector3(0, 0, -coord), 3.0))
-    entities[4].queue_action(MoveAction(entities[4], Vector3(-coord, 0, 0), 3.0))
-    entities[4].queue_action(MoveAction(entities[4], Vector3(0, 5.0, 0), 3.0))
+    # entities[4].queue_action(MoveAction(entities[4], Vector3(-coord, 0, 0), 1.5))
+    # entities[4].queue_action(MoveAction(entities[4], Vector3(0, 0, coord), 3.0))
+    # entities[4].queue_action(MoveAction(entities[4], Vector3(coord, 0, 0), 3.0))
+    # entities[4].queue_action(MoveAction(entities[4], Vector3(0, 0, -coord), 3.0))
+    # entities[4].queue_action(MoveAction(entities[4], Vector3(-coord, 0, 0), 3.0))
+    # entities[4].queue_action(MoveAction(entities[4], Vector3(0, 5.0, 0), 3.0))
 
     print("Prepare Camera")
     # camera = GameCamera([18.0, 16.0, 18.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], mode=CameraMode.CAMERA_CUSTOM)
-    camera = GameCamera(Vector3(18.0, 5.0, 18.0), [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], projection=CameraProjection.CAMERA_PERSPECTIVE, mode=CameraMode.CAMERA_CUSTOM)
+    # camera = GameCamera(Vector3(18.0, 5.0, 18.0), [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], projection=CameraProjection.CAMERA_PERSPECTIVE, mode=CameraMode.CAMERA_CUSTOM)
+    camera = GameCamera(Vector3(0.0, 20.0, .0), [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], projection=CameraProjection.CAMERA_PERSPECTIVE, mode=CameraMode.CAMERA_CUSTOM)
     # sm_action = SplineMoveAction(camera, 10.0, Vector3(-18.0, 2.5, -18.0), Vector3(18.0, 2.5, -20.0), Vector3(-18.0, 2.5, 20.0))
     dur = 12.0
     sm_action = SplineMoveAction(
+        # camera, 
+        entities[4],
+        dur - 3,
+        Vector3(0.0, 6.5, 18.0),
+        Vector3(18.0, 2.5, -10.0),
+        Vector3(-25.0, 3.5, -40.0),
+        Vector3(-8.0, 3.5, -60.0),
+        Vector3(-45.0, 2.5, 55.0)
+    )
+    cam_path = SplineMoveAction(
         camera, 
         dur,
         Vector3(0.0, 6.5, 18.0),
@@ -87,7 +99,20 @@ def test_camera_movement():
         Vector3(-8.0, 3.5, -60.0),
         Vector3(-45.0, 2.5, 55.0)
     )
-    camera.queue_action(CompoundAction(camera, sm_action, LookRelativeAction(camera, dur, Vector3(1.0, 0.0, 1.0))))
+    entities[4].queue_action(sm_action)
+    camera.queue_action(CompoundAction(camera, cam_path, LookAtAction(camera, entities[4], dur)))
+    # camera.queue_action(
+    #     CompoundAction(
+    #         camera, 
+    #         sm_action, 
+    #         SequencedAction(
+    #             camera,
+    #             LookRelativeAction(camera, 4.0, Vector3(1.0, 0.0, 1.0)),
+    #             LookRelativeAction(camera, 4.0, Vector3(1.0, 0.0, -1.0)),
+    #             LookRelativeAction(camera, 4.0, Vector3(-1.0, 0.0, 1.0)),
+    #         )
+    #     )
+    # )
     # camera.queue_action(sm_action)
     # camera.queue_action(SplineMoveAction(camera, 10.0, Vector3(-18.0, 5.5, -18.0), Vector3(-20.0, 4.0, 0.0)))
     # camera.queue_action(

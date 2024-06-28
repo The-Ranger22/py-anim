@@ -108,6 +108,7 @@ class CompoundAction(ActionBase):
         for k in finished:
             self._actions.pop(k)
         self.resolve_state()
+
 class WaitAction(ActionBase):
     def __init__(self, target, duration_seconds: float):
         super().__init__(self, target=target, duration_seconds=duration_seconds)
@@ -225,10 +226,37 @@ class SplineMoveAction(ActionBase):
 
 
 
-class RotateAction(ActionBase):
-    pass
-        
+class PanAction(ActionBase):
+    def __init__(self, camera, duration_seconds: float, look_at: Vector3):
+        super().__init__(self, target=camera, duration_seconds=duration_seconds)
+        self._cur_look = self._target._cam.target
+        self._step_count = 0
+        self._num_steps = self._duration_sec * 60.0
+        self._look_at = look_at
+    
+    def activate(self):
+        super().activate()
+        self._cur_look = self._target._cam.target
 
+
+    def step(self):
+        # self._look_at = Vect
+        self._target._cam
+        self._step_count += 1
+        self.resolve_state()
+
+class SequencedAction(ActionBase):
+    def __init__(self, target: EntityI, *actions: ActionBase):
+        super().__init__(self, target=target, duration_seconds=sum([a._duration_sec for a in actions]))
+        self._step_count = 0
+        self._num_steps = len(actions)
+        self._actions = {idx: a for idx, a in enumerate(actions)}
+    
+    def step(self):
+        self._actions[self._step_count].step()
+        if self._actions[self._step_count].is_complete():
+            self._step_count += 1
+        self.resolve_state()
         
 
 # class ActionQueue:
