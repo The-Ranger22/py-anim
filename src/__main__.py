@@ -77,7 +77,7 @@ def test_camera_movement():
     print("Prepare Camera")
     # camera = GameCamera([18.0, 16.0, 18.0], [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], mode=CameraMode.CAMERA_CUSTOM)
     # camera = GameCamera(Vector3(18.0, 5.0, 18.0), [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], projection=CameraProjection.CAMERA_PERSPECTIVE, mode=CameraMode.CAMERA_CUSTOM)
-    camera = GameCamera(Vector3(0.0, 20.0, .0), [0.0, 0.0, 0.0], [0.0, 1.0, 0.0], projection=CameraProjection.CAMERA_PERSPECTIVE, mode=CameraMode.CAMERA_CUSTOM)
+    camera = GameCamera(Vector3(0.0, 20.0, .0), [0.0, 0.0, 0.0], [0.1, 1.0, .0], projection=CameraProjection.CAMERA_PERSPECTIVE, mode=CameraMode.CAMERA_CUSTOM)
     # sm_action = SplineMoveAction(camera, 10.0, Vector3(-18.0, 2.5, -18.0), Vector3(18.0, 2.5, -20.0), Vector3(-18.0, 2.5, 20.0))
     dur = 12.0
     sm_action = SplineMoveAction(
