@@ -2,7 +2,7 @@ from src.entity import GameEntity
 from src.camera import GameCamera
 from itertools import count
 import pyray as pr
-
+from raylib import ffi
 class Scene:
     # Index entities from furthest to closest relative to camera
     _entities: list[GameEntity] 
@@ -10,11 +10,12 @@ class Scene:
     _active_cam: GameCamera
     _count = count()
     _instances = {}
-    def __init__(self, camera: GameCamera, *entity_or_entities, background_color=pr.RAYWHITE, showgrid: bool = False):
+    def __init__(self, camera: GameCamera, shader: pr.Shader, entity_or_entities, lights, background_color=pr.RAYWHITE, showgrid: bool = False):
         self._uid = next(Scene._count)
         Scene._instances[self._uid] = self
-
-        self._entities = list(*entity_or_entities)
+        self._shader = shader
+        self._entities = list(entity_or_entities)
+        self._lights = lights
         self._cameras = [camera]
         self._active_cam = camera
         self._bg_color = background_color
@@ -39,19 +40,37 @@ class Scene:
         pr.begin_drawing()
         pr.clear_background(self._bg_color)
         # Draw Background
-
         # Draw Entities
+        camera_pos = ffi.new(
+            "float cameraPos[3]",
+            (
+                self._active_cam._cam.position.x,
+                self._active_cam._cam.position.y,
+                self._active_cam._cam.position.z
+            )
+        )
+        pr.set_shader_value(
+            self._shader,
+            self._shader.locs[pr.ShaderLocationIndex.SHADER_LOC_VECTOR_VIEW],
+            camera_pos,
+            pr.ShaderUniformDataType.SHADER_UNIFORM_VEC3
+        )
+        # Do updates
+        for ent in self._entities:
+            ent.update(self._shader)
         pr.begin_mode_3d(self._active_cam._cam)
-
+        pr.begin_shader_mode(self._shader)
         if self._showgrid: 
             pr.draw_grid(20, 5.0)
 
+
         for ent in self._entities:
             # print(f"Drawing `{ent}`")
-            ent.update()
             ent.draw()
+        pr.end_shader_mode()
+        
+        for light in self._lights:
+            light.draw()
         pr.end_mode_3d()
         # Draw Config
-
-
         pr.end_drawing()

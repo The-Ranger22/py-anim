@@ -36,7 +36,7 @@ class GameEntity(EntityI, HasActionQueue):
 
 
     # Updates
-    def update(self):
+    def update(self, shader=None):
         self.resolve_current_action()
             
 
