@@ -32,7 +32,6 @@ class Light:
     @classmethod
     def create(cls, l_type: LightType, pos: Vector3, target: Vector3, color: Color, shader: Shader):
         light = cls()
-        print(light._uid)
         lights_count = len(cls._instances)
         if lights_count <= MAX_LIGHTS:
             light.enabled = True

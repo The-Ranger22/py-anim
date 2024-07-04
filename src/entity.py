@@ -42,7 +42,7 @@ class GameEntity(EntityI, HasActionQueue):
 
     
     def draw(self):
-        # self._model.transform = matrix_rotate_xyz(self._orient)
+        self._model.transform = matrix_rotate_xyz(self._orient)
         draw_model(self._model, self.pos, self.scale, self._color)
     
     def __str__(self):
